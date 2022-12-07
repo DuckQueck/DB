@@ -1,0 +1,101 @@
+CREATE DATABASE SandBox20221207
+USE Sandbox20221202
+
+CREATE TABLE Vartotojai(
+[Id] int identity (1,1) primary key,
+[Vardas] nvarchar(20) not null,
+[Pavarde] nvarchar(20) not null
+);
+
+CREATE TABLE Saskaitos(
+[Id] int identity (1,1) primary key,
+[SaskaitosNr] nvarchar(20) not null UNIQUE,
+[Likutis] smallint not null,
+[VartotojaiFK] int foreign key references Vartotojai(Id)
+);
+
+insert into Vartotojai(Vardas, Pavarde)
+values('Vardenis', 'Pavardenis'),
+('Antanas', 'Antanauskas')
+
+insert into Saskaitos(SaskaitosNr, Likutis, VartotojaiFK)
+values('LT781848654', '123', 1),
+      ('LT159463236', '321', 2)
+
+	  SELECT * FROM Vartotojai
+	  SELECT * FROM Saskaitos
+
+BEGIN TRANSACTION
+	BEGIN TRY
+		UPDATE Saskaitos
+		set Likutis = Likutis - 50
+		where Id = 1
+		UPDATE Saskaitos
+		set Likutis = Likutis + 50
+		where Id = 2
+		COMMIT
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+	END CATCH
+--------------------------------------------------------------------------------------------
+
+ALTER TABLE Vartotojai
+ADD [ElPastas] nvarchar(120)
+
+ALTER TABLE Vartotojai
+ALTER COLUMN Vardas NVARCHAR(60) NOT NULL
+
+ALTER TABLE Vartotojai
+ALTER COLUMN Pavarde NVARCHAR(120) NOT NULL
+
+
+DECLARE @i INT = 0
+
+DECLARE @randomName NVARCHAR(60)
+DECLARE @randomLastname NVARCHAR(60)
+DECLARE @randomEmail NVARCHAR(120)
+
+WHILE @i < 100000000 
+
+BEGIN
+
+    SET @i = @i + 1
+
+SET @randomName = CONCAT(LEFT(NEWID(), 8), '_VARDAS', @i)
+SET @randomLastname = CONCAT(LEFT(NEWID(), 8),'_PAVARDE', @i)
+SET @randomEmail = CONCAT(@randomName, '.', @randomLastname, '@gmail.com')
+
+    INSERT INTO Vartotojai (Vardas, Pavarde, ElPastas)
+	VALUES (@randomName, @randomLastname, @randomEmail)
+
+END
+
+SELECT *
+FROM Vartotojai
+WHERE Id = 2000000
+
+-- 765C6277_VARDAS1999998
+-- 73AA3C34_PAVARDE1999998
+
+-- per 365 --
+SELECT *
+FROM Vartotojai
+WHERE Vardas = '765C6277_VARDAS1999998' AND
+Pavarde = '73AA3C34_PAVARDE1999998'
+
+-- sudejo per 6088 isgavo per 1--
+CREATE NONCLUSTERED INDEX IX_Vartotojai_VardasPavarde
+ON Vartotojai(Vardas , Pavarde)
+
+SELECT *
+FROM Vartotojai
+WHERE ElPastas = '765C6277_VARDAS1999998.73AA3C34_PAVARDE1999998@gmail.com'
+
+SELECT * FROM Vartotojai
+RIGHT JOIN Saskaitos ON Vartotojai.Id = Saskaitos.VartotojaiFK
+WHERE Vartotojai.Id <= 5
+
+SELECT * FROM Vartotojai
+LEFT JOIN Saskaitos ON Vartotojai.Id = Saskaitos.VartotojaiFK
+WHERE Vartotojai.Id <= 5
